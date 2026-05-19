@@ -6,30 +6,23 @@
  * Author: Developer
  */
 
-// 1. Security guard
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// =====================================================================
-// PART 1: THE CORE PLUGIN (The "Announcer")
-// =====================================================================
-
 /**
- * We register a shortcode [custom_greeting] so you can easily test this
+ * We register a shortcode [custom_greeting] to easily test this
  * by adding [custom_greeting] to any post or page.
  */
 add_shortcode( 'custom_greeting', 'cgu_render_greeting_box' );
 
 function cgu_render_greeting_box() {
-    // We are generating HTML to return to WordPress
+    // Generates HTML to return to WordPress
     ob_start();
 
-    // ─────────────────────────────────────────────────────────
-    // 🪝 OUR CUSTOM FILTER: 'cgu_greeting_word'
-    // ─────────────────────────────────────────────────────────
-    // We set the default word to "Hello". But before we use it, 
-    // we pass it through apply_filters() so other developers can change it!
+    // CUSTOM FILTER HOOK: 'cgu_greeting_word'
+    // Set the default word to "Hello". But before we use it, 
+    // Passed it through apply_filters() so other developers can change it
     
     $default_word = 'Hello';
     $final_word   = apply_filters( 'cgu_greeting_word', $default_word );
@@ -40,24 +33,15 @@ function cgu_render_greeting_box() {
     echo '<p>Welcome to our website. We are glad you are here.</p>';
     echo '</div>';
 
-    // ─────────────────────────────────────────────────────────
-    // 🪝 OUR CUSTOM ACTION: 'cgu_after_greeting'
-    // ─────────────────────────────────────────────────────────
-    // We just finished drawing the box. Now we announce to the system
-    // that this event has occurred, in case anyone wants to react to it.
-    
+    // CUSTOM ACTION HOOK: 'cgu_after_greeting'
+    // Announce to the system that this event has occurred, 
+    // in case anyone wants to react to it.
     do_action( 'cgu_after_greeting' );
 
     // Return the generated HTML to the shortcode
     return ob_get_clean();
 }
 
-
-// =====================================================================
-// PART 2: THE EXTENSION CODE (The "Volunteer")
-// =====================================================================
-// Imagine this code lives in a completely different plugin or in your 
-// theme's functions.php file. This is someone taking advantage of your hooks!
 
 /**
  * 1. Let's use the Filter to change the text!
