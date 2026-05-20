@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Log All Actions
  * Description: Logs all actions and filters fired during a page load to wp-content/logs/actions.log.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Developer
  */
 
@@ -39,6 +39,33 @@ if ( ! defined( 'LAA_TIMEZONE' ) ) {
 	define( 'LAA_TIMEZONE', 'Asia/Singapore' );
 }
 
+// List of high-frequency/internal translation hooks to exclude to eliminate log bloat and CPU overhead.
+if ( ! defined( 'LAA_BLACKLIST' ) ) {
+	define( 'LAA_BLACKLIST', array(
+		'gettext',
+		'gettext_with_context',
+		'ngettext',
+		'ngettext_with_context',
+		'locale',
+		'sanitize_key',
+		'translations_opened',
+		'override_load_textdomain',
+		'plugin_locale',
+		'theme_locale',
+		'determine_current_user'
+	) );
+}
+
+// Maximum number of hooks captured per page request to prevent memory/CPU bloating.
+if ( ! defined( 'LAA_MAX_HOOKS_PER_REQUEST' ) ) {
+	define( 'LAA_MAX_HOOKS_PER_REQUEST', 2000 );
+}
+
+// Set to true to only log when query parameter 'laa_debug' or cookie 'laa_debug' is present.
+if ( ! defined( 'LAA_REQUIRE_TRIGGER' ) ) {
+	define( 'LAA_REQUIRE_TRIGGER', false );
+}
+
 
 if ( ! LAA_ENABLED ) {
 	return;
@@ -61,6 +88,9 @@ final class LAA_Action_Logger {
 	/** @var float Request start time with microsecond precision. */
 	private $start_time;
 
+	/** @var DateTimeZone|null Cached timezone object. */
+	private $tz_object = null;
+
 	
 	// Get (or create) the singleton instance and start logging.
 	public static function init() {
@@ -72,6 +102,14 @@ final class LAA_Action_Logger {
 
 	// Constructor — sets up hooks.
 	private function __construct() {
+		// If trigger is required, verify presence of parameter or cookie
+		if ( LAA_REQUIRE_TRIGGER ) {
+			$has_trigger = isset( $_GET['laa_debug'] ) || isset( $_COOKIE['laa_debug'] );
+			if ( ! $has_trigger ) {
+				return;
+			}
+		}
+
 		// Record when this page request started
 		$this->start_time = microtime( true );
 
@@ -93,7 +131,6 @@ final class LAA_Action_Logger {
 		$method = isset( $_SERVER['REQUEST_METHOD'] ) ? $_SERVER['REQUEST_METHOD'] : 'CLI';
 		$uri    = isset( $_SERVER['REQUEST_URI'] )    ? $_SERVER['REQUEST_URI']    : '(none)';
 		$ip     = isset( $_SERVER['REMOTE_ADDR'] )    ? $_SERVER['REMOTE_ADDR']    : '(none)';
-		// Remove the microseconds for the header, just grab the date/time portion
 		$time   = substr( $this->get_local_timestamp(), 0, 19 );
 
 		$this->buffer[] = '';
@@ -106,7 +143,6 @@ final class LAA_Action_Logger {
 
 	// Callback attached to the 'all' hook.
 	public function capture_hook() {
-		// Get the current action or filter name
 		$hook_name = current_filter();
 
 		// Prevent infinite loop if we capture our own shutdown handler
@@ -114,9 +150,26 @@ final class LAA_Action_Logger {
 			return;
 		}
 
-		$this->counter++;
+		// 1. Blacklist check to filter out extreme high-frequency translation/internal hooks
+		if ( in_array( $hook_name, LAA_BLACKLIST, true ) ) {
+			return;	
+		}
 
-		$timestamp = $this->get_local_timestamp();
+		// 2. Cap the buffer to prevent memory exhaustion
+		if ( $this->counter >= LAA_MAX_HOOKS_PER_REQUEST ) {
+			if ( LAA_MAX_HOOKS_PER_REQUEST === $this->counter ) {
+				$this->buffer[] = sprintf(
+					'#%04d | +%8sms | [WARNING] Max hook logging limit reached (%d). Capped to prevent memory overhead.',
+					$this->counter + 1,
+					number_format( round( ( microtime( true ) - $this->start_time ) * 1000, 2 ), 2 ),
+					LAA_MAX_HOOKS_PER_REQUEST
+				);
+				$this->counter++; // Increment past limit so warning fires only once
+			}
+			return;
+		}
+
+		$this->counter++;
 
 		// Number of arguments passed to this hook
 		$num_args = func_num_args();
@@ -125,9 +178,10 @@ final class LAA_Action_Logger {
 		$elapsed = round( ( microtime( true ) - $this->start_time ) * 1000, 2 );
 
 		// Add a nicely padded row to our buffer array
+		// PERFORMANCE OPTIMIZATION: Removed full local timestamp formatting from individual rows.
+		// Relative elapsed time (+XX.XXms) is highly precise and doesn't trigger heavy timezone math.
 		$this->buffer[] = sprintf(
-			'[%s] #%04d | +%8sms | %-40s | args: %d',
-			$timestamp,
+			'#%04d | +%8sms | %-40s | args: %d',
 			$this->counter,
 			number_format( $elapsed, 2 ),
 			$hook_name,
@@ -223,25 +277,33 @@ final class LAA_Action_Logger {
 
 	/**
 	 * Get the current timestamp in the configured local timezone.
+	 * PERFORMANCE OPTIMIZATION: Uses a static DateTime object and cached DateTimeZone
+	 * to prevent high-frequency object generation overhead.
 	 */
 	private function get_local_timestamp() {
 		try {
-			$tz = new DateTimeZone( LAA_TIMEZONE );
-			$dt = new DateTime( 'now', $tz );
+			if ( null === $this->tz_object ) {
+				$this->tz_object = new DateTimeZone( LAA_TIMEZONE );
+			}
 			
-			// Extract microseconds
 			$microtime = microtime( true );
-			$micro = sprintf( '%06d', ( $microtime - floor( $microtime ) ) * 1000000 );
+			$seconds   = floor( $microtime );
+			$micro     = sprintf( '%06d', ( $microtime - $seconds ) * 1000000 );
+			
+			static $dt = null;
+			if ( null === $dt ) {
+				$dt = new DateTime();
+				$dt->setTimezone( $this->tz_object );
+			}
+			$dt->setTimestamp( $seconds );
 			
 			return $dt->format( 'Y-m-d H:i:s' ) . '.' . $micro;
 		} catch ( Exception $e ) {
-			// Fallback to default UTC if timezone string is invalid
 			return date( 'Y-m-d H:i:s' );
 		}
 	}
 
 }
-
 
 // Boot the logger
 LAA_Action_Logger::init();
