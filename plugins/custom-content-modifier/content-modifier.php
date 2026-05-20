@@ -10,10 +10,7 @@ if (!defined("ABSPATH")) {
     exit;
 }
 
-// ──────────────────────────────────────────────
 // BLOCK A: Inject CSS styles into the page <head>
-// ──────────────────────────────────────────────
-
 add_action( 'wp_head', 'ccm_inject_styles' );
 
 function ccm_inject_styles() {
@@ -65,16 +62,10 @@ function ccm_inject_styles() {
     <?php
 }
 
-// ──────────────────────────────────────────────
 // BLOCK B: Hook into the_content filter
-// ──────────────────────────────────────────────
-
 add_filter( 'the_content', 'ccm_modify_content' );
 
-// ──────────────────────────────────────────────
 // BLOCK C: The main content modifier function
-// ──────────────────────────────────────────────
-
 function ccm_modify_content( $content ) {
     // Only modify on single post/page views (not archives, feeds, etc.)
     if ( ! is_singular() ) {
