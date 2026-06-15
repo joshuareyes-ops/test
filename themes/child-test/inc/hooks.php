@@ -76,6 +76,12 @@ if ( ! function_exists( 'child_test_setup' ) ) :
 
 		// Add support for responsive embedded content.
 		add_theme_support( 'responsive-embeds' );
+
+		// Enable support for editor styles.
+		add_theme_support( 'editor-styles' );
+		
+		// Enqueue the main stylesheet into the editor.
+		add_editor_style( 'style.css' );
 	}
 endif;
 add_action( 'after_setup_theme', 'child_test_setup' );

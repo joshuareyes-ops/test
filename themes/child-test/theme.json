@@ -65,6 +65,20 @@
 		"layout": {
 			"contentSize": "800px",
 			"wideSize": "1200px"
+		},
+		"shadow": {
+			"presets": [
+				{
+					"name": "Natural Elevation",
+					"slug": "natural-elevation",
+					"shadow": "0 10px 20px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)"
+				},
+				{
+					"name": "Primary Glow",
+					"slug": "primary-glow",
+					"shadow": "0 0 15px 5px var(--wp--preset--color--primary)"
+				}
+			]
 		}
 	},
 	"styles": {
