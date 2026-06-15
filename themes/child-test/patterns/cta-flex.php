@@ -1,0 +1,32 @@
+<?php
+/**
+ * Title: Call to Action (Flex Row)
+ * Slug: child-test/cta-flex
+ * Categories: call-to-action
+ */
+?>
+<!-- wp:group {"align":"wide","style":{"color":{"background":"var:preset|color|secondary","text":"#ffffff"},"spacing":{"padding":{"top":"var:preset|spacing|50","bottom":"var:preset|spacing|50","left":"var:preset|spacing|40","right":"var:preset|spacing|40"}}},"layout":{"type":"flex","flexWrap":"wrap","justifyContent":"space-between"}} -->
+<div class="wp-block-group alignwide has-text-color has-background" style="color:#ffffff;background-color:var(--wp--preset--color--secondary);padding-top:var(--wp--preset--spacing--50);padding-right:var(--wp--preset--spacing--40);padding-bottom:var(--wp--preset--spacing--50);padding-left:var(--wp--preset--spacing--40)">
+
+<!-- wp:group {"layout":{"type":"default"}} -->
+<div class="wp-block-group">
+<!-- wp:heading {"level":2} -->
+<h2 class="wp-block-heading">Ready to elevate your online presence?</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Join thousands of satisfied customers using our platform.</p>
+<!-- /wp:paragraph -->
+</div>
+<!-- /wp:group -->
+
+<!-- wp:buttons -->
+<div class="wp-block-buttons">
+<!-- wp:button {"style":{"color":{"background":"#ffffff","text":"var:preset|color|secondary"}}} -->
+<div class="wp-block-button"><a class="wp-block-button__link has-text-color has-background wp-element-button" style="color:var(--wp--preset--color--secondary);background-color:#ffffff">Join Now</a></div>
+<!-- /wp:button -->
+</div>
+<!-- /wp:buttons -->
+
+</div>
+<!-- /wp:group -->

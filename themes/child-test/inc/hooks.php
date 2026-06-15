@@ -76,7 +76,36 @@ if ( ! function_exists( 'child_test_setup' ) ) :
 
 		// Add support for responsive embedded content.
 		add_theme_support( 'responsive-embeds' );
+
+		// Enable support for editor styles.
+		add_theme_support( 'editor-styles' );
+		
+		// Enqueue the main stylesheet into the editor.
+		add_editor_style( 'style.css' );
 	}
 endif;
 add_action( 'after_setup_theme', 'child_test_setup' );
 
+/**
+ * Register custom block styles.
+ */
+function child_test_register_block_styles() {
+	// Register a "Ghost" style for the Button block.
+	register_block_style(
+		'core/button',
+		array(
+			'name'  => 'ghost',
+			'label' => __( 'Ghost', 'child-test' ),
+		)
+	);
+
+	// Register a "Card" style for the Group block.
+	register_block_style(
+		'core/group',
+		array(
+			'name'  => 'card',
+			'label' => __( 'Card', 'child-test' ),
+		)
+	);
+}
+add_action( 'init', 'child_test_register_block_styles' );
