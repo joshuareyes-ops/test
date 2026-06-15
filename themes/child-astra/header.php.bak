@@ -1,16 +1,12 @@
 <?php
 /**
- * The header for Astra Child Theme.
- *
- * This is the template that displays all of the <head> section and everything up until <div id="content">
- *
- * @link https://developer.wordpress.org/themes/basics/template-files/#template-partials
+ * Archived Astra header override — not used when parent is a block theme (TT5).
  *
  * @package child-astra
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
+	exit;
 }
 
 ?><!DOCTYPE html>
@@ -23,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <?php
 if ( apply_filters( 'astra_header_profile_gmpg_link', true ) ) {
 	?>
-	<link rel="profile" href="https://gmpg.org/xfn/11"> 
+	<link rel="profile" href="https://gmpg.org/xfn/11">
 	<?php
 }
 ?>
@@ -64,16 +60,12 @@ if ( apply_filters( 'astra_header_profile_gmpg_link', true ) ) {
 	?>
 >
 	<?php
-	// CUSTOM CHILD THEME HOOK: Before standard header starts
 	do_action( 'child_astra_before_header' );
 
 	astra_header_before();
-
 	astra_header();
-
 	astra_header_after();
 
-	// CUSTOM CHILD THEME HOOK: After standard header ends
 	do_action( 'child_astra_after_header' );
 
 	astra_content_before();
