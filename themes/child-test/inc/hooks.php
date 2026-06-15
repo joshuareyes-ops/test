@@ -79,7 +79,7 @@ if ( ! function_exists( 'child_test_setup' ) ) :
 
 		// Enable support for editor styles.
 		add_theme_support( 'editor-styles' );
-		
+
 		// Enqueue the main stylesheet into the editor.
 		add_editor_style( 'style.css' );
 	}
