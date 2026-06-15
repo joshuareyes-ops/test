@@ -15,3 +15,25 @@ Text Domain: child-test
 Tags: 
 */
 
+/* Custom Block Styles */
+
+/* core/button: Ghost Style */
+.wp-block-button.is-style-ghost .wp-block-button__link {
+	background-color: transparent !important;
+	border: 2px solid currentColor !important;
+	color: inherit;
+	transition: all 0.2s ease-in-out;
+}
+.wp-block-button.is-style-ghost .wp-block-button__link:hover {
+	background-color: currentColor !important;
+	color: var(--wp--preset--color--background, #fff) !important;
+}
+
+/* core/group: Card Style */
+.wp-block-group.is-style-card {
+	background-color: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+	padding: 2rem;
+}
