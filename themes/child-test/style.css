@@ -1,18 +1,18 @@
 /*
 Theme Name: child-test
-Theme URI: 
-Author: 
-Author URI: 
-Description: 
+Theme URI:
+Author:
+Author URI:
+Description:
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 5.7
-Version: 
+Version:
 License: GNU General Public License v2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 Template: twentytwentyfive
 Text Domain: child-test
-Tags: 
+Tags:
 */
 
 /* Custom Block Styles */
@@ -36,4 +36,25 @@ Tags:
 	border-radius: 12px;
 	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 	padding: 2rem;
+}
+
+/* Theme settings footer output */
+.child-test-footer {
+	margin: 1.5rem auto;
+	padding: 1rem 1.5rem;
+	border-top: 1px solid #e2e8f0;
+	text-align: center;
+}
+.child-test-footer--compact {
+	max-width: 800px;
+}
+.child-test-footer--full {
+	max-width: 100%;
+}
+.child-test-footer__text {
+	margin: 0 0 0.5rem;
+}
+.child-test-footer__email,
+.child-test-footer__url {
+	margin: 0.25rem 0 0;
 }

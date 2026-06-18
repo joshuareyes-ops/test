@@ -11,7 +11,7 @@ if ( ! function_exists( 'child_test_enqueue_styles' ) ) :
 	 * Enqueue parent and child stylesheets.
 	 */
 	function child_test_enqueue_styles() {
-		// Enqueue parent style
+		// Enqueue parent style.
 		wp_enqueue_style(
 			'twentytwentyfive-style',
 			get_parent_theme_file_uri( 'style.css' ),
@@ -19,7 +19,7 @@ if ( ! function_exists( 'child_test_enqueue_styles' ) ) :
 			wp_get_theme()->parent()->get( 'Version' )
 		);
 
-		// Enqueue child style
+		// Enqueue child style.
 		wp_enqueue_style(
 			'child-test-style',
 			get_stylesheet_uri(),

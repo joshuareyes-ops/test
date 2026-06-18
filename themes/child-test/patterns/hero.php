@@ -3,7 +3,11 @@
  * Title: Hero Section
  * Slug: child-test/hero
  * Categories: featured, banner
+ *
+ * @package WordPress
+ * @subpackage child-test
  */
+
 ?>
 <!-- wp:group {"align":"full","style":{"spacing":{"padding":{"top":"var:preset|spacing|70","bottom":"var:preset|spacing|70","left":"var:preset|spacing|30","right":"var:preset|spacing|30"}},"color":{"background":"var:preset|color|primary","text":"var:preset|color|background"}},"layout":{"type":"constrained"}} -->
 <div class="wp-block-group alignfull has-background-color has-primary-background-color has-text-color has-background" style="padding-top:var(--wp--preset--spacing--70);padding-right:var(--wp--preset--spacing--30);padding-bottom:var(--wp--preset--spacing--70);padding-left:var(--wp--preset--spacing--30)">

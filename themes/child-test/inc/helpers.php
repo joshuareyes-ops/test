@@ -13,6 +13,6 @@ if ( ! function_exists( 'child_test_get_current_year' ) ) :
 	 * @return string Current year.
 	 */
 	function child_test_get_current_year() {
-		return date( 'Y' );
+		return gmdate( 'Y' );
 	}
 endif;
