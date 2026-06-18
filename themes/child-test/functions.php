@@ -9,7 +9,7 @@
  */
 
 // Modular includes.
-require_once get_stylesheet_directory() . '/inc/enqueue.php';
+require_once get_stylesheet_directory () . '/inc/enqueue.php';
 require_once get_stylesheet_directory() . '/inc/customizer.php';
 require_once get_stylesheet_directory() . '/inc/hooks.php';
 require_once get_stylesheet_directory() . '/inc/helpers.php';
