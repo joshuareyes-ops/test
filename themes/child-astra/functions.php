@@ -1,6 +1,6 @@
 <?php
 /**
- * child-astra functions and definitions.
+ * child-astra functions and definitions
  *
  * @link https://developer.wordpress.org/themes/basics/theme-functions/
  *
@@ -13,3 +13,4 @@ require_once get_stylesheet_directory() . '/inc/enqueue.php';
 require_once get_stylesheet_directory() . '/inc/customizer.php';
 require_once get_stylesheet_directory() . '/inc/hooks.php';
 require_once get_stylesheet_directory() . '/inc/helpers.php';
+
