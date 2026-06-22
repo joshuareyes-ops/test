@@ -65,6 +65,168 @@ function my_theme_get_filtered_posts_callback( WP_REST_Request $request ) {
     return rest_ensure_response( $custom_response );
 }
 
+add_action( 'rest_api_init', 'my_theme_advanced_endpoint' );
+
+function my_theme_advanced_endpoint() {
+    register_rest_route( 'mytheme/v1', '/advanced-posts', array(
+    // --- HANDLER 1: THE EXISTING GET REQUEST (PUBLIC) ---
+    array(
+        'methods'             => WP_REST_Server::READABLE,
+        'callback'            => 'my_theme_advanced_callback',
+        'permission_callback' => '__return_true', 
+        'args'                => array(
+            // Parameter 1: Validated mathematically
+            'author_id' => array(
+                'required'          => false,
+                'type'              => 'integer',
+                'validate_callback' => function( $param, $request, $key ) {
+                    return is_numeric( $param ) && intval( $param ) > 0;
+                },
+                'sanitize_callback' => 'absint',
+            ),
+            // Parameter 2: Validated by string length
+            'search_term' => array(
+                'required'          => false,
+                'type'              => 'string',
+                'validate_callback' => function( $param, $request, $key ) {
+                    return is_string( $param ) && strlen( $param ) >= 3;
+                },
+                'sanitize_callback' => 'sanitize_text_field',
+            ),
+            // Parameter 3: Validated by strict boolean checking
+            'strict_mode' => array(
+                'required'          => false,
+                'type'              => 'boolean',
+                'validate_callback' => function( $param, $request, $key ) {
+                    return is_bool( $param ) || in_array( $param, array( 'true', 'false', '1', '0' ), true );
+                },
+                'sanitize_callback' => 'rest_sanitize_boolean',
+            ),
+            // Standard Pagination Parameters
+            'page' => array(
+                'type'              => 'integer',
+                'default'           => 1,
+                'sanitize_callback' => 'absint',
+            ),
+            'per_page' => array(
+                'type'              => 'integer',
+                'default'           => 5,
+                'sanitize_callback' => 'absint',
+            )
+        )
+    )
+
+    // --- HANDLER 2: PATCH REQUEST (AUTHENTICATED) ---
+    array(
+        'methods'             => 'PATCH', // Specifically listening for partial updates
+        'callback'            => 'my_theme_advanced_patch_callback',
+        'permission_callback' => function() {
+            // Strictly locked to users who have editing privileges
+            return current_user_can( 'edit_posts' ); 
+        },
+        'args'                => array(
+            // For a PATCH request, we absolutely MUST know which post ID to update
+            'id' => array(
+                'required'          => true,
+                'type'              => 'integer',
+                'sanitize_callback' => 'absint'
+            ),
+            // The new title they want to save
+            'title' => array(
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field'
+            )
+        )
+    )
+    ) );
+}
+
+function my_theme_advanced_callback( WP_REST_Request $request ) {
+    // 1. Extract the sanitized parameters
+    $author_id   = $request->get_param( 'author_id' );
+    $search_term = $request->get_param( 'search_term' );
+    $strict_mode = $request->get_param( 'strict_mode' );
+    $page        = $request->get_param( 'page' );
+    $per_page    = $request->get_param( 'per_page' );
+
+    // 2. Build the standard WP_Query arguments
+    $args = array(
+        'post_type'      => 'post',
+        'paged'          => $page,
+        'posts_per_page' => $per_page,
+    );
+
+    // Conditionally apply our complex filters
+    if ( $author_id ) {
+        $args['author'] = $author_id;
+    }
+
+    if ( $search_term ) {
+        $args['s'] = $search_term;
+        if ( $strict_mode ) {
+            $args['exact'] = true; // Forces WP_Query to match the whole word exactly
+        }
+    }
+
+    // 3. Execute the Query
+    $query = new WP_Query( $args );
+    $data  = array();
+
+    if ( $query->have_posts() ) {
+        while ( $query->have_posts() ) {
+            $query->the_post();
+            $data[] = array(
+                'id'    => get_the_ID(),
+                'title' => get_the_title(),
+            );
+        }
+        wp_reset_postdata();
+    }
+
+    // 4. Construct the Official REST Response Object
+    $response = new WP_REST_Response( $data, 200 );
+
+    // 5. Inject official pagination headers
+    $response->header( 'X-WP-Total', $query->found_posts );
+    $response->header( 'X-WP-TotalPages', $query->max_num_pages );
+
+    return $response;
+}
+
+function my_theme_advanced_patch_callback( WP_REST_Request $request ) {
+    // 1. Extract the sanitized data
+    $post_id   = $request->get_param( 'id' );
+    $new_title = $request->get_param( 'title' );
+
+    // 2. Verify the post actually exists before trying to update it
+    if ( ! get_post( $post_id ) ) {
+        return new WP_Error( 'no_post', 'Invalid post ID.', array( 'status' => 404 ) );
+    }
+
+    // 3. Prepare the update payload
+    $update_data = array(
+        'ID' => $post_id,
+    );
+
+    if ( ! empty( $new_title ) ) {
+        $update_data['post_title'] = $new_title;
+    }
+
+    // 4. Execute the database update
+    $updated_post_id = wp_update_post( $update_data, true );
+
+    if ( is_wp_error( $updated_post_id ) ) {
+        return $updated_post_id; // Return the exact error to the API response
+    }
+
+    // 5. Return success payload
+    return new WP_REST_Response( array( 
+        'message' => 'Post updated successfully.',
+        'updated_id' => $updated_post_id 
+    ), 200 );
+}
+
 add_filter( 'the_content', 'my_theme_inject_app_container' );
 
 function my_theme_inject_app_container( $content ) {
