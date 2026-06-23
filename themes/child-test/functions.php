@@ -114,7 +114,7 @@ function my_theme_advanced_endpoint() {
                 'sanitize_callback' => 'absint',
             )
         )
-    )
+    ),
 
     // --- HANDLER 2: PATCH REQUEST (AUTHENTICATED) ---
     array(
@@ -260,4 +260,55 @@ function my_theme_enqueue_api_scripts() {
             'nonce' => wp_create_nonce( 'wp_rest' )   
         )
     );
+}
+
+// This is a function that gets the heavy post data from the database
+function get_my_heavy_post_data() {
+    // 1. Define a unique name for this specific cache (max 45 characters)
+    $transient_key = 'my_theme_heavy_post_list';
+
+    // 2. Try to get the data from the cache
+    $cached_data = get_transient( $transient_key );
+
+    // 3. Check if the cache missed (either it expired, or it was never created)
+    if ( false === $cached_data ) {
+        
+        // --- THE EXPENSIVE OPERATION STARTS HERE ---
+        // (This code ONLY runs if the cache is empty)
+        
+        $args = array(
+            'post_type'      => 'post',
+            'posts_per_page' => 50,
+            // A complex meta query that usually slows down the database
+            'meta_query'     => array(
+                array(
+                    'key'     => 'featured_article',
+                    'value'   => 'yes',
+                    'compare' => '='
+                )
+            )
+        );
+        
+        $query = new WP_Query( $args );
+        $cached_data = array(); 
+
+        if ( $query->have_posts() ) {
+            while ( $query->have_posts() ) {
+                $query->the_post();
+                $cached_data[] = array(
+                    'id'    => get_the_ID(),
+                    'title' => get_the_title(),
+                );
+            }
+            wp_reset_postdata();
+        }
+        // --- THE EXPENSIVE OPERATION ENDS HERE ---
+
+        // 4. Save the result to the cache so the next visitor doesn't trigger the query
+        // We use WordPress time constants (e.g., 12 * HOUR_IN_SECONDS) for readability
+        set_transient( $transient_key, $cached_data, 12 * HOUR_IN_SECONDS );
+    }
+
+    // 5. Return the data (whether it came from the DB just now, or from the cache)
+    return $cached_data;
 }
