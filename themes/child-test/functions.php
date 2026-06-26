@@ -242,22 +242,41 @@ function my_theme_inject_app_container( $content ) {
 add_action( 'wp_enqueue_scripts', 'my_theme_enqueue_api_scripts' );
 
 function my_theme_enqueue_api_scripts() {
-    // 1. Tell WordPress to load your specific JavaScript file
-    wp_enqueue_script( 
-        'my-api-fetch-script', 
-        get_stylesheet_directory_uri() . '/assets/js/api-fetch.js', 
-        array(), 
-        '1.0', 
-        true // Load in the footer
+    // Conditional loading: the #custom-posts-container is only injected on
+    // pages (see my_theme_inject_app_container), so skip the script everywhere
+    // else to avoid shipping unused JavaScript and an unnecessary REST nonce.
+    if ( ! is_page() ) {
+        return;
+    }
+
+    $script_path = get_stylesheet_directory() . '/assets/js/api-fetch.js';
+    $script_uri  = get_stylesheet_directory_uri() . '/assets/js/api-fetch.js';
+
+    // Version the asset off its last-modified time so browsers automatically
+    // pick up changes instead of caching a stale file behind a fixed "1.0".
+    $version = file_exists( $script_path ) ? filemtime( $script_path ) : false;
+
+    // 1. Tell WordPress to load your specific JavaScript file.
+    wp_enqueue_script(
+        'my-api-fetch-script',
+        $script_uri,
+        array(),
+        $version,
+        array(
+            'in_footer' => true,
+            // The script only runs on DOMContentLoaded, so defer it to keep it
+            // off the critical rendering path without breaking execution order.
+            'strategy'  => 'defer',
+        )
     );
 
-    // 2. Inject the dynamic PHP data into the browser for JavaScript to use
-    wp_localize_script( 
-        'my-api-fetch-script', 
-        'wpApiSettings', 
+    // 2. Inject the dynamic PHP data into the browser for JavaScript to use.
+    wp_localize_script(
+        'my-api-fetch-script',
+        'wpApiSettings',
         array(
-            'root'  => esc_url_raw( rest_url() ),     
-            'nonce' => wp_create_nonce( 'wp_rest' )   
+            'root'  => esc_url_raw( rest_url() ),
+            'nonce' => wp_create_nonce( 'wp_rest' )
         )
     );
 }
