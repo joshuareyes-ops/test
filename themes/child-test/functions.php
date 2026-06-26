@@ -8,6 +8,7 @@
  * @subpackage child-test
  */
 
+ //Test
 // Modular includes.
 require_once get_stylesheet_directory () . '/inc/enqueue.php';
 require_once get_stylesheet_directory() . '/inc/customizer.php';
